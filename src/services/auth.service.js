@@ -1,4 +1,5 @@
-const { ConflictError } = require('../utils/error');
+const { ConflictError, UnauthorizedError, ForbiddenError } = require('../utils/error');
+const { createSession, rotateRefreshToken, revokeSession, revokeAllSessions } = require('../utils/token');
 const prisma = require('../config/prisma').getInstance().getClient();
 const bcrypt = require('bcrypt');
 const { generateAndStoreOtp, validateOtp } = require('../utils/otp');
@@ -40,7 +41,46 @@ const verifyOtp = async (otpSessionId, otp) => {
     });
     return { user };
 }
+// Compared against when the user does not exist so response time doesn't reveal valid emails.
+const DUMMY_HASH = bcrypt.hashSync('dummy-password', 10);
+
+const login = async ({ email, password }, meta) => {
+    const user = await prisma.user.findUnique({ where: { email } });
+    const valid = await bcrypt.compare(password, user?.password || DUMMY_HASH);
+    if (!user || !user.password || !valid) {
+        throw new UnauthorizedError('Invalid email or password');
+    }
+    if (!user.emailVerified) {
+        throw new ForbiddenError('Email not verified');
+    }
+
+    const tokens = await createSession(user.id, meta);
+    const { password: _pw, ...safeUser } = user;
+    return { ...tokens, user: safeUser };
+};
+
+const refresh = async (refreshToken) => {
+    const { accessToken, refreshToken: newRefreshToken } = await rotateRefreshToken(refreshToken);
+    return { accessToken, refreshToken: newRefreshToken };
+};
+
+const logout = async (userId, sid) => revokeSession(userId, sid);
+
+const logoutAll = async (userId) => revokeAllSessions(userId);
+
+const getMe = async (userId) => {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedError('User not found');
+    const { password: _pw, ...safeUser } = user;
+    return safeUser;
+};
+
 module.exports = {
     sendOtp,
-    verifyOtp
+    verifyOtp,
+    login,
+    refresh,
+    logout,
+    logoutAll,
+    getMe,
 }

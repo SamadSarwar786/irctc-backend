@@ -19,5 +19,8 @@ module.exports = {
   smtpKey : process.env.SMTP_KEY,
   mailFromEmail : process.env.MAIL_FROM_EMAIL,
   mailFromName : process.env.MAIL_FROM_NAME || 'IRCTC',
+  jwtAccessSecret : process.env.JWT_ACCESS_SECRET,
+  accessTokenTTL : Number(process.env.ACCESS_TOKEN_TTL) || 900,
+  refreshTokenTTL : Number(process.env.REFRESH_TOKEN_TTL) || 604800,
 
 };
