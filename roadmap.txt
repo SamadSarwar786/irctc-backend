@@ -1,0 +1,36 @@
+
+
+
+IRCTC backend (microservice)
+functional requirement
+
+1. login and signup using 
+a phone/email password
+b google authentication
+2. user profile manage
+
+userService
+
+searchService (fussy search / autocomplete using elasticsearch)
+
+routeService for admin to add route 
+
+
+bookingService
+1. concurrent booking
+2. partial booking
+
+payment service (multiple payment gateway using adapter design pattern like razorpay, payU)
+
+archivalService
+move the old booking to other db like casandra
+
+
+tech-stack
+exprees
+node 
+redis
+bull mq (node js queue)
+sendGrid
+
+
