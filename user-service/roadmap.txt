@@ -34,3 +34,15 @@ bull mq (node js queue)
 sendGrid
 
 
+
+notes 
+google oAuth 2.0 vs google identity services
+
+we will be using google identity services as they are less complex and easy to use
+
+Google auth flow using  google identity services
+1. user click on google's sign on button
+2. google return id_token (JWT token) to frontend
+3. frontend send id_token to backend 
+4. Backend verify id_token with google using google public api
+5. after verifying backend create the user in db and send accessToken and refreshToken to the frontend 
